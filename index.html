@@ -1,0 +1,454 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#080c14;--bg2:#0d1220;--bg3:#111827;
+    --accent:#3b82f6;--accent2:#7c3aed;--accent3:#10b981;
+    --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
+    --border:#1e2d4a;--border2:#1e3a5f;
+    --card:#0d1828;--card2:#0f1e30;
+    --red:#ef4444;--green:#10b981;
+    --font-head:'Syne',sans-serif;
+    --font-body:'DM Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.6;overflow-x:hidden}
+
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+  /* BREAKING NEWS */
+  .breaking-bar{background:linear-gradient(90deg,#1d1040,#0a1a3a);border-bottom:1px solid var(--accent2);padding:8px 0;overflow:hidden;position:relative}
+  .breaking-inner{display:flex;align-items:center;gap:0}
+  .breaking-tag{background:var(--accent);color:#fff;font-family:var(--font-mono);font-size:10px;font-weight:600;padding:3px 10px;letter-spacing:2px;white-space:nowrap;flex-shrink:0;margin-left:16px;border-radius:2px}
+  .ticker-wrap{overflow:hidden;flex:1;mask-image:linear-gradient(90deg,transparent 0%,black 5%,black 95%,transparent 100%)}
+  .ticker{display:flex;gap:0;animation:ticker 40s linear infinite;white-space:nowrap}
+  .ticker span{font-size:12px;color:var(--text);padding:0 32px;font-family:var(--font-mono)}
+  .ticker span::after{content:'◆';margin-left:32px;color:var(--accent);opacity:.6}
+  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* HEADER */
+  nav{background:rgba(8,12,20,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+  .logo{font-family:var(--font-head);font-size:20px;font-weight:800;letter-spacing:-1px;color:var(--text)}
+  .logo span{color:var(--accent)}
+  .nav-links{display:flex;gap:24px;list-style:none}
+  .nav-links a{font-size:12px;font-weight:500;color:var(--text2);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-badge{background:var(--accent);color:#fff;font-size:9px;padding:2px 6px;border-radius:20px;font-family:var(--font-mono);letter-spacing:1px}
+
+  /* HERO */
+  .hero{padding:60px 24px 48px;max-width:900px;margin:0 auto;text-align:center;position:relative}
+  .hero-eyebrow{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .live-dot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+  .hero h1{font-family:var(--font-head);font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-2px;color:var(--text);margin-bottom:20px}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero-sub{font-size:15px;color:var(--text2);max-width:600px;margin:0 auto 32px;line-height:1.7}
+  .hero-meta{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+  .meta-tag{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px;border:1px solid var(--border);padding:4px 10px;border-radius:3px}
+
+  /* SECTION STRUCTURE */
+  section{border-top:1px solid var(--border);padding:56px 24px}
+  .section-inner{max-width:900px;margin:0 auto}
+  .section-label{font-family:var(--font-mono);font-size:10px;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+  .section-title{font-family:var(--font-head);font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+  .section-desc{font-size:14px;color:var(--text2);margin-bottom:32px;max-width:600px}
+
+  /* INTEGRATION LEVELS */
+  .levels-tabs{display:flex;gap:4px;margin-bottom:24px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:0}
+  .lvl-tab{font-family:var(--font-mono);font-size:11px;padding:10px 16px;background:transparent;border:none;color:var(--text2);cursor:pointer;letter-spacing:.5px;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;position:relative;top:1px}
+  .lvl-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .lvl-tab:hover:not(.active){color:var(--text)}
+  .level-panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:28px;min-height:180px;display:none;animation:fadeIn .3s ease}
+  .level-panel.visible{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .level-badge{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:4px 12px;font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:14px;letter-spacing:1px}
+  .level-panel h3{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:10px}
+  .level-panel p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+  .level-examples{display:flex;gap:8px;flex-wrap:wrap}
+  .example-pill{font-size:11px;font-family:var(--font-mono);padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--text3);background:var(--bg)}
+
+  /* PROGRESS BAR */
+  .progress-track{background:var(--bg);border:1px solid var(--border);border-radius:6px;height:8px;margin-bottom:24px;overflow:hidden;position:relative}
+  .progress-fill{height:100%;border-radius:6px;transition:width .4s ease;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+
+  /* CORRESPONDENTS GRID */
+  .corr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .corr-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:transform .25s,border-color .25s;cursor:default}
+  .corr-card:hover{transform:translateY(-4px);border-color:var(--border2)}
+  .corr-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .corr-region{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:3px}
+  .r-americas{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+  .r-europe{background:rgba(124,58,237,.12);color:#a78bfa;border:1px solid rgba(124,58,237,.3)}
+  .r-asia{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+  .corr-flag{font-size:18px}
+  .corr-body{padding:20px}
+  .corr-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:6px}
+  .corr-body h3{font-family:var(--font-head);font-size:16px;font-weight:700;line-height:1.3;margin-bottom:10px}
+  .corr-body p{font-size:13px;color:var(--text2);line-height:1.6}
+  .corr-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px}
+  .corr-author{font-size:11px;color:var(--text3)}
+  .corr-time{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:auto}
+
+  /* FACT CHECK */
+  .fc-wrap{max-width:540px;margin:0 auto}
+  .fc-post{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;margin-bottom:20px}
+  .fc-post-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .fc-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;font-family:var(--font-head);flex-shrink:0}
+  .fc-user{font-size:13px;font-weight:500}
+  .fc-handle{font-size:12px;color:var(--text3)}
+  .fc-question{font-size:15px;line-height:1.6;color:var(--text);margin-bottom:14px}
+  .fc-question strong{color:var(--accent)}
+  .fc-actions{display:flex;gap:10px}
+  .fc-stat{font-family:var(--font-mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+
+  .fc-verify-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font-mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;font-weight:600}
+  .fc-verify-btn:hover{background:#2563eb;transform:translateY(-1px)}
+  .fc-verify-btn:active{transform:translateY(0)}
+  .fc-verify-btn:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;transform:none}
+
+  .fc-result{background:var(--card);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:24px;display:none;animation:fadeIn .4s ease}
+  .fc-result.revealed{display:block}
+  .fc-stamp{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .stamp-badge{font-family:var(--font-head);font-size:28px;font-weight:800;color:#ef4444;border:3px solid #ef4444;padding:4px 16px;border-radius:4px;transform:rotate(-3deg);letter-spacing:2px;display:inline-block}
+  .stamp-label{font-family:var(--font-mono);font-size:11px;color:var(--text2);letter-spacing:1px}
+  .fc-result p{font-size:13px;color:var(--text2);line-height:1.7}
+  .fc-result strong{color:var(--text)}
+
+  /* POLL */
+  .poll-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;max-width:600px;margin:0 auto}
+  .poll-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .poll-live{background:var(--red);color:#fff;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:3px;letter-spacing:2px;animation:blink 2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+  .poll-card h3{font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:24px;line-height:1.3}
+  .poll-opt{width:100%;margin-bottom:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;cursor:pointer;text-align:left;color:var(--text);font-size:14px;font-family:var(--font-body);transition:all .2s;position:relative;overflow:hidden}
+  .poll-opt:hover:not(:disabled){border-color:var(--accent);background:rgba(59,130,246,.06)}
+  .poll-opt:disabled{cursor:default}
+  .poll-fill{position:absolute;left:0;top:0;height:100%;border-radius:8px;transition:width .6s ease;opacity:.18}
+  .fill-a{background:var(--accent)}
+  .fill-b{background:var(--accent2)}
+  .poll-opt-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between}
+  .poll-pct{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent)}
+  .poll-total{font-family:var(--font-mono);font-size:11px;color:var(--text3);text-align:center;margin-top:8px}
+  .poll-won{border-color:var(--accent)!important}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center}
+  .footer-logo{font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-1px;color:var(--text);margin-bottom:8px}
+  .footer-logo span{color:var(--accent)}
+  .footer-meta{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px}
+
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:0}
+</style>
+
+<h2 class="sr-only">Portal Signed Rubber — Cobertura jornalística interativa sobre Organizações Internacionais Regionais</h2>
+
+<!-- BREAKING NEWS BAR -->
+<div class="breaking-bar">
+  <div class="breaking-inner">
+    <div class="breaking-tag">ÚLTIMA HORA</div>
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span>Mercosul e UE avançam em acordo histórico de livre comércio após décadas de negociações</span>
+        <span>Cúpula da ASEAN debate criação de moeda digital regional unificada</span>
+        <span>Brexit completa ciclo: Grã-Bretanha reavalia acordos bilaterais com ex-parceiros europeus</span>
+        <span>APEC projeta crescimento de 4,2% para comércio na região Ásia-Pacífico em 2026</span>
+        <span>Zona do Euro resiste a pressões inflacionárias com política coordenada do BCE</span>
+        <span>Mercosul e UE avançam em acordo histórico de livre comércio após décadas de negociações</span>
+        <span>Cúpula da ASEAN debate criação de moeda digital regional unificada</span>
+        <span>Brexit completa ciclo: Grã-Bretanha reavalia acordos bilaterais com ex-parceiros europeus</span>
+        <span>APEC projeta crescimento de 4,2% para comércio na região Ásia-Pacífico em 2026</span>
+        <span>Zona do Euro resiste a pressões inflacionárias com política coordenada do BCE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">Signed <span>Rubber</span></div>
+  <ul class="nav-links">
+    <li><a href="#">Geo</a></li>
+    <li><a href="#">Blocos</a></li>
+    <li><a href="#">Análise</a></li>
+    <li><a href="#">Enquete <span class="nav-badge">AO VIVO</span></a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">
+    <div class="live-dot"></div>
+    Cobertura Especial · Geopolítica Mundial
+  </div>
+  <h1>O Tabuleiro das <em>Organizações Regionais</em>: como os blocos moldam o mundo atual</h1>
+  <p class="hero-sub">Uma análise jornalística completa sobre os mecanismos de integração econômica, os grandes blocos em operação e o papel do Brasil nesse xadrez geopolítico.</p>
+  <div class="hero-meta">
+    <span class="meta-tag">SEMINÁRIO · GEOGRAFIA</span>
+    <span class="meta-tag">8 CORRESPONDENTES</span>
+    <span class="meta-tag">2026</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SEÇÃO 1: NÍVEIS DE INTEGRAÇÃO -->
+<section id="s1">
+  <div class="section-inner">
+    <div class="section-label">Seção 01 — Análise Estrutural</div>
+    <div class="section-title">Os Quatro Níveis de Integração</div>
+    <p class="section-desc">Clique em cada nível para entender como os países aprofundam sua interdependência econômica de forma escalonada.</p>
+
+    <div class="progress-track" id="lvl-progress">
+      <div class="progress-fill" id="progress-fill" style="width:25%"></div>
+    </div>
+
+    <div class="levels-tabs" role="tablist">
+      <button class="lvl-tab active" role="tab" aria-selected="true" onclick="showLevel(0,this)">01 · Zona de Livre Comércio</button>
+      <button class="lvl-tab" role="tab" aria-selected="false" onclick="showLevel(1,this)">02 · União Aduaneira</button>
+      <button class="lvl-tab" role="tab" aria-selected="false" onclick="showLevel(2,this)">03 · Mercado Comum</button>
+      <button class="lvl-tab" role="tab" aria-selected="false" onclick="showLevel(3,this)">04 · União Econômica</button>
+    </div>
+
+    <div class="level-panel visible" id="lvl-0">
+      <div class="level-badge">Nível 1 · Integração Básica</div>
+      <h3>Zona de Livre Comércio</h3>
+      <p>Os países membros eliminam ou reduzem significativamente as tarifas e barreiras alfandegárias entre si, mas <strong>cada país mantém sua própria política comercial</strong> com terceiros. É o ponto de entrada para a cooperação regional.</p>
+      <div class="level-examples">
+        <span class="example-pill">NAFTA / USMCA</span>
+        <span class="example-pill">EFTA (Europa)</span>
+        <span class="example-pill">ASEAN Free Trade</span>
+      </div>
+    </div>
+
+    <div class="level-panel" id="lvl-1">
+      <div class="level-badge">Nível 2 · Política Comum</div>
+      <h3>União Aduaneira</h3>
+      <p>Além de livre comércio interno, os membros adotam uma <strong>Tarifa Externa Comum (TEC)</strong> — ou seja, cobram os mesmos impostos de países de fora do bloco. Isso exige maior coordenação política e econômica entre os estados.</p>
+      <div class="level-examples">
+        <span class="example-pill">Mercosul</span>
+        <span class="example-pill">União Aduaneira do SACU</span>
+        <span class="example-pill">CAN (Comunidade Andina)</span>
+      </div>
+    </div>
+
+    <div class="level-panel" id="lvl-2">
+      <div class="level-badge">Nível 3 · Integração Profunda</div>
+      <h3>Mercado Comum</h3>
+      <p>Vai além das tarifas: garante a <strong>livre circulação de bens, serviços, capital e pessoas</strong> entre os membros. É um salto qualitativo que exige harmonização regulatória intensa e tratados multilaterais robustos.</p>
+      <div class="level-examples">
+        <span class="example-pill">UE (parcialmente)</span>
+        <span class="example-pill">Espaço Econômico Europeu</span>
+        <span class="example-pill">Mercosul (projeto)</span>
+      </div>
+    </div>
+
+    <div class="level-panel" id="lvl-3">
+      <div class="level-badge">Nível 4 · Integração Máxima</div>
+      <h3>União Econômica e Monetária</h3>
+      <p>O estágio mais profundo: além de mercado comum, os países compartilham <strong>moeda única, banco central e política fiscal coordenada</strong>. A soberania monetária nacional é transferida para instituições supranacionais.</p>
+      <div class="level-examples">
+        <span class="example-pill">Zona do Euro</span>
+        <span class="example-pill">BCE (Banco Central Europeu)</span>
+        <span class="example-pill">Tratado de Maastricht</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SEÇÃO 2: CORRESPONDENTES -->
+<section id="s2">
+  <div class="section-inner">
+    <div class="section-label">Seção 02 — Correspondentes Internacionais</div>
+    <div class="section-title">Os Blocos em Foco</div>
+    <p class="section-desc">Matérias especiais dos nossos correspondentes nas três grandes regiões do mundo.</p>
+
+    <div class="corr-grid">
+
+      <div class="corr-card">
+        <div class="corr-header">
+          <span class="corr-region r-americas">Américas</span>
+          <span class="corr-flag">🌎</span>
+        </div>
+        <div class="corr-body">
+          <div class="corr-label">Mercosul · Acordo UE</div>
+          <h3>Brasil no centro do tabuleiro: o acordo que travou por 25 anos — e o que muda agora</h3>
+          <p>O Mercosul negocia há décadas o maior acordo de livre comércio do sul global. Com a Argentina instável e o Brasil entre prioridades domésticas e ambições externas, o bloco enfrenta sua mais delicada encruzilhada.</p>
+        </div>
+        <div class="corr-foot">
+          <span class="corr-author">Correspondente: Américas</span>
+          <span class="corr-time">AO VIVO</span>
+        </div>
+      </div>
+
+      <div class="corr-card">
+        <div class="corr-header">
+          <span class="corr-region r-europe">Europa</span>
+          <span class="corr-flag">🇪🇺</span>
+        </div>
+        <div class="corr-body">
+          <div class="corr-label">União Europeia · Crise</div>
+          <h3>O projeto mais ambicioso da história: euro, fronteiras abertas e as fraturas pós-Brexit</h3>
+          <p>A UE alcançou o nível máximo de integração: moeda única, parlamento supranacional e fronteiras abertas. Mas o Brexit expôs fragilidades profundas, e a crise energética com a Rússia testou a coesão do bloco como nunca antes.</p>
+        </div>
+        <div class="corr-foot">
+          <span class="corr-author">Correspondente: Europa</span>
+          <span class="corr-time">AO VIVO</span>
+        </div>
+      </div>
+
+      <div class="corr-card">
+        <div class="corr-header">
+          <span class="corr-region r-asia">Ásia-Pacífico</span>
+          <span class="corr-flag">🌏</span>
+        </div>
+        <div class="corr-body">
+          <div class="corr-label">ASEAN · APEC · Semicondutores</div>
+          <h3>ASEAN e APEC: a locomotiva logística que fabrica o futuro tecnológico do planeta</h3>
+          <p>Com Taiwan, Coreia do Sul, Japão e Vietnam no núcleo, a região Ásia-Pacífico controla a cadeia global de chips e eletrônicos. A ASEAN e a APEC são os frameworks que viabilizam essa interdependência produtiva monumental.</p>
+        </div>
+        <div class="corr-foot">
+          <span class="corr-author">Correspondente: Ásia-Pacífico</span>
+          <span class="corr-time">AO VIVO</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SEÇÃO 3: FATO OU FAKE -->
+<section id="s3">
+  <div class="section-inner">
+    <div class="section-label">Seção 03 — Checagem de Fatos</div>
+    <div class="section-title">Quadro: Fato ou Fake?</div>
+    <p class="section-desc">Nosso time de fact-checkers analisa as afirmações que circulam nas redes sobre geopolítica e blocos econômicos.</p>
+
+    <div class="fc-wrap">
+      <div class="fc-post">
+        <div class="fc-post-header">
+          <div class="fc-avatar">X</div>
+          <div>
+            <div class="fc-user">@geoopiniao</div>
+            <div class="fc-handle">Usuário · Rede Social</div>
+          </div>
+        </div>
+        <p class="fc-question">"<strong>Os blocos econômicos destroem totalmente a independência e a soberania de um país.</strong> Quando entra num bloco, o país perde o controle de tudo. Isso é globalismo contra a nação!"</p>
+        <div class="fc-actions">
+          <span class="fc-stat">♻ 4.812 compartilhamentos</span>
+          <span class="fc-stat">❤ 18.3k curtidas</span>
+        </div>
+      </div>
+
+      <button class="fc-verify-btn" id="verify-btn" onclick="revealFake()">
+        ⚡ VERIFICAR RESPOSTA
+      </button>
+
+      <div class="fc-result" id="fc-result">
+        <div class="fc-stamp">
+          <span class="stamp-badge">FAKE</span>
+          <div class="stamp-label">Verificado pelo Signed Rubber Fact-Check Lab</div>
+        </div>
+        <p>A afirmação é <strong>falsa e desinformativa</strong>. Os países aderem a blocos econômicos de forma <strong>totalmente voluntária</strong>, após negociações e aprovação parlamentar, com o objetivo de ampliar seu poder de mercado e barganha internacional.</p>
+        <br>
+        <p>Ao entrar num bloco, o país <strong>ganha</strong>: acesso preferencial a mercados maiores, maior poder de negociação em fóruns globais como a OMC, atração de investimentos estrangeiros e estabilidade macroeconômica regional. A soberania sobre decisões internas, constituição e política social permanece intacta. O que muda são certas políticas comerciais — e essa é uma escolha estratégica soberana, não uma imposição.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SEÇÃO 4: ENQUETE -->
+<section id="s4">
+  <div class="section-inner">
+    <div class="section-label">Seção 04 — Enquete ao Vivo</div>
+    <div class="section-title">Opinião da Sala</div>
+    <p class="section-desc">Sua voz conta. Participe da enquete e veja o resultado em tempo real.</p>
+
+    <div class="poll-card">
+      <div class="poll-header">
+        <span class="poll-live">AO VIVO</span>
+      </div>
+      <h3>O Brasil deve priorizar o fortalecimento do Mercosul ou buscar acordos isolados com grandes potências?</h3>
+
+      <button class="poll-opt" id="opt-a" onclick="vote('a')">
+        <div class="poll-fill fill-a" id="fill-a" style="width:0%"></div>
+        <div class="poll-opt-inner">
+          <span>🤝 Fortalecer o Mercosul</span>
+          <span class="poll-pct" id="pct-a" style="display:none">0%</span>
+        </div>
+      </button>
+
+      <button class="poll-opt" id="opt-b" onclick="vote('b')">
+        <div class="poll-fill fill-b" id="fill-b" style="width:0%"></div>
+        <div class="poll-opt-inner">
+          <span>🌐 Acordos isolados com grandes potências</span>
+          <span class="poll-pct" id="pct-b" style="display:none">0%</span>
+        </div>
+      </button>
+
+      <div class="poll-total" id="poll-total" style="display:none"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Signed <span>Rubber</span></div>
+  <p class="footer-meta">SEMINÁRIO DE GEOGRAFIA · ORGANIZAÇÕES INTERNACIONAIS REGIONAIS · 2026</p>
+</footer>
+
+<script>
+  function showLevel(idx, btn){
+    document.querySelectorAll('.level-panel').forEach(p=>p.classList.remove('visible'));
+    document.querySelectorAll('.lvl-tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
+    document.getElementById('lvl-'+idx).classList.add('visible');
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected','true');
+    var pcts=[25,50,75,100];
+    document.getElementById('progress-fill').style.width=pcts[idx]+'%';
+  }
+
+  function revealFake(){
+    var btn=document.getElementById('verify-btn');
+    var res=document.getElementById('fc-result');
+    btn.disabled=true;
+    btn.textContent='✓ VERIFICADO PELO SIGNED RUBBER';
+    res.classList.add('revealed');
+    res.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  var votes={a:0,b:0};
+  var voted=false;
+
+  function vote(opt){
+    if(voted)return;
+    voted=true;
+    votes[opt]+=Math.floor(Math.random()*8)+5;
+    var other=opt==='a'?'b':'a';
+    votes[other]+=Math.floor(Math.random()*12)+8;
+    var total=votes.a+votes.b;
+    var pA=Math.round(votes.a/total*100);
+    var pB=100-pA;
+    document.getElementById('fill-a').style.width=pA+'%';
+    document.getElementById('fill-b').style.width=pB+'%';
+    document.getElementById('pct-a').style.display='inline';
+    document.getElementById('pct-b').style.display='inline';
+    document.getElementById('pct-a').textContent=pA+'%';
+    document.getElementById('pct-b').textContent=pB+'%';
+    document.getElementById('opt-a').disabled=true;
+    document.getElementById('opt-b').disabled=true;
+    document.getElementById('poll-total').style.display='block';
+    document.getElementById('poll-total').textContent=total+' votos registrados';
+    var winner=pA>=pB?'opt-a':'opt-b';
+    document.getElementById(winner).classList.add('poll-won');
+  }
+</script>
