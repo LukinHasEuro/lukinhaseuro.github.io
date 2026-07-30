@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estrutura da Casa — Investigação Matemática</title>
+
+<!--
+  COMO USAR ESTE ARQUIVO
+  =======================
+  1) SLIDE 5 (vídeo dos cálculos): grave o vídeo do grupo resolvendo os
+     exercícios e salve o arquivo, com o nome exato "video-slide5.mp4",
+     NA MESMA PASTA deste arquivo .html. O player já está pronto pra tocar
+     automaticamente quando o arquivo existir.
+  2) Os dados da planta baixa do chalé (páginas 48–49 da apostila) já estão
+     transcritos no site — Slide 03 (medidas dos cômodos) e Slide 04
+     (pilares, altura do pé-direito). Os campos da calculadora do Slide 5
+     já vêm preenchidos com uma estimativa a partir desses dados; se o
+     grupo quiser refinar somando as paredes internas, é só editar os
+     campos — o cálculo é refeito automaticamente.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --blueprint:#123456;
+    --blueprint-deep:#0A2743;
+    --blueprint-line:#7FC2E8;
+    --paper:#ECE6D8;
+    --paper-light:#F7F3E8;
+    --concrete:#B9B2A3;
+    --ink:#1D2229;
+    --safety:#D9622B;
+    --safety-deep:#A84A1E;
+    --ok-green:#3E7A52;
+    --font-display:'Big Shoulders Display', 'Arial Narrow', sans-serif;
+    --font-body:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
+    --font-mono:'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:var(--blueprint-deep);
+    overflow:hidden;
+    height:100vh;
+    height:100svh;
+    width:100vw;
+  }
+  ::selection{background:var(--safety);color:#fff;}
+
+  button{font-family:var(--font-body);cursor:pointer;}
+  button:focus-visible, [contenteditable]:focus-visible, input:focus-visible{
+    outline:3px solid var(--safety);
+    outline-offset:2px;
+  }
+
+  h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:.01em;text-transform:uppercase;}
+
+  /* ---------- viewport / slide system ---------- */
+  .viewport{position:relative;width:100vw;height:100vh;height:100svh;overflow:hidden;}
+
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--concrete) 1px, transparent 1px),
+      linear-gradient(90deg, var(--concrete) 1px, transparent 1px);
+    background-size:36px 36px;
+    background-position:-1px -1px;
+    opacity:0;pointer-events:none;
+    transform:translateX(3vw);
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .slide.active{opacity:1;pointer-events:auto;transform:translateX(0);}
+
+  .sheet-frame{
+    position:absolute; inset:14px;
+    border:2px solid var(--ink);
+    pointer-events:none;
+  }
+  .sheet-frame::before, .sheet-frame::after,
+  .crop-tl, .crop-tr, .crop-bl, .crop-br{content:'';}
+  .crop{position:absolute;width:14px;height:14px;border:2px solid var(--ink);pointer-events:none;}
+  .crop.tl{top:0;left:0;border-right:none;border-bottom:none;}
+  .crop.tr{top:0;right:0;border-left:none;border-bottom:none;}
+  .crop.bl{bottom:0;left:0;border-right:none;border-top:none;}
+  .crop.br{bottom:0;right:0;border-left:none;border-top:none;}
+
+  .slide-inner{
+    position:relative;
+    flex:1;
+    margin:32px 32px 84px 32px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    padding-right:6px;
+  }
+  .slide-inner::-webkit-scrollbar{width:8px;}
+  .slide-inner::-webkit-scrollbar-thumb{background:var(--concrete);}
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--blueprint);font-weight:600;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:'';width:22px;height:2px;background:var(--safety);display:inline-block;}
+
+  .slide h2{font-size:clamp(30px,4.4vw,54px);color:var(--blueprint-deep);line-height:.98;}
+  .slide h3{font-size:clamp(20px,2.4vw,30px);color:var(--blueprint);margin-bottom:4px;}
+  .slide p, .slide li{font-size:clamp(15px,1.55vw,19px);line-height:1.5;max-width:74ch;}
+  .slide-body-text{font-size:20px;}
+
+  .two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:start;}
+  @media (max-width:900px){.two-col{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--paper-light);
+    border:1.5px solid var(--blueprint);
+    padding:18px 20px;
+    position:relative;
+  }
+  .card::before{
+    content:attr(data-tag);
+    position:absolute;top:-11px;left:14px;
+    background:var(--safety);color:#fff;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;
+    padding:2px 8px;text-transform:uppercase;
+  }
+
+  .formula-box{
+    font-family:var(--font-mono);
+    background:var(--blueprint-deep);color:var(--blueprint-line);
+    padding:14px 18px;font-size:18px;letter-spacing:.02em;
+    border-left:5px solid var(--safety);
+  }
+  .formula-box b{color:#fff;}
+
+  .measure-table{border-collapse:collapse;width:100%;font-family:var(--font-mono);font-size:14px;}
+  .measure-table th,.measure-table td{border:1px solid var(--blueprint);padding:7px 10px;text-align:left;}
+  .measure-table th{background:var(--blueprint);color:#fff;font-weight:600;text-transform:uppercase;font-size:12px;letter-spacing:.06em;}
+  .measure-table tr:nth-child(even) td{background:rgba(18,52,86,.06);}
+
+  .note{
+    font-family:var(--font-mono);font-size:13px;line-height:1.5;
+    background:repeating-linear-gradient(135deg, rgba(217,98,43,.08) 0 8px, rgba(217,98,43,.14) 8px 16px);
+    border:1.5px dashed var(--safety-deep);
+    padding:10px 14px;color:var(--safety-deep);
+  }
+
+  /* ---------- title block (signature element) ---------- */
+  .titleblock{
+    position:absolute;left:32px;right:32px;bottom:16px;height:56px;
+    display:grid;grid-template-columns:auto 1fr auto auto auto;
+    border:2px solid var(--ink);background:var(--paper-light);
+    font-family:var(--font-mono);font-size:12px;
+  }
+  .titleblock > div{padding:6px 12px;border-left:1.5px solid var(--ink);display:flex;flex-direction:column;justify-content:center;}
+  .titleblock > div:first-child{border-left:none;}
+  .titleblock .tb-label{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--blueprint);}
+  .titleblock .tb-value{font-weight:600;}
+  .titleblock .tb-sheet{background:var(--blueprint-deep);color:#fff;}
+  .titleblock .tb-sheet .tb-label{color:var(--blueprint-line);}
+
+  /* ---------- nav ---------- */
+  .navbar{
+    position:absolute;top:16px;left:32px;right:32px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:5;
+  }
+  .dots{display:flex;gap:7px;}
+  .dot{
+    width:26px;height:8px;border:1.5px solid var(--blueprint-deep);
+    background:transparent;padding:0;
+  }
+  .dot.active{background:var(--safety);border-color:var(--safety-deep);}
+  .navbtns{display:flex;gap:8px;}
+  .navbtn{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    background:var(--blueprint-deep);color:#fff;border:none;padding:9px 16px;
+  }
+  .navbtn:hover{background:var(--safety);}
+  .navbtn:disabled{opacity:.35;cursor:default;background:var(--blueprint-deep);}
+
+  [contenteditable="true"]{outline-offset:4px;}
+  [contenteditable="true"]:hover{background:rgba(217,98,43,.08);}
+
+  /* ---------- SLIDE 1 : cover ---------- */
+  .cover-slide .slide-inner{justify-content:center;align-items:flex-start;gap:26px;}
+  .cover-title{font-size:clamp(46px,8vw,104px);color:var(--blueprint-deep);line-height:.92;}
+  .cover-sub{font-family:var(--font-mono);font-size:clamp(14px,1.6vw,19px);color:var(--blueprint);max-width:60ch;}
+  .cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;width:100%;align-items:center;margin-top:6px;}
+  .cover-meta{display:grid;gap:12px;}
+  .meta-row{display:flex;gap:10px;align-items:baseline;font-family:var(--font-mono);font-size:14px;}
+  .meta-row .k{width:150px;color:var(--blueprint);text-transform:uppercase;letter-spacing:.06em;font-size:11px;}
+  .meta-row .v{border-bottom:1.5px dashed var(--blueprint);flex:1;padding:2px 4px;min-height:22px;}
+
+  /* ---------- Slide 5 : calculators ---------- */
+  .calc{border:1.5px solid var(--blueprint);background:var(--paper-light);padding:16px 18px;}
+  .calc h4{font-family:var(--font-display);text-transform:uppercase;font-size:19px;color:var(--blueprint-deep);margin:0 0 8px;}
+  .calc-row{display:flex;align-items:center;gap:10px;margin:7px 0;flex-wrap:wrap;}
+  .calc-row label{font-family:var(--font-mono);font-size:12.5px;flex:1;min-width:190px;}
+  .calc-row input{
+    width:100px;font-family:var(--font-mono);font-size:14px;padding:5px 7px;
+    border:1.5px solid var(--blueprint);background:#fff;
+  }
+  .calc-result{
+    margin-top:10px;padding:8px 12px;background:var(--blueprint-deep);color:#fff;
+    font-family:var(--font-mono);font-size:14px;
+  }
+  .calc-result b{color:var(--blueprint-line);font-size:16px;}
+
+  .video-wrap{position:relative;background:var(--blueprint-deep);border:2px solid var(--ink);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;}
+  .video-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
+  .video-fallback{position:absolute;inset:0;display:none;flex-direction:column;gap:10px;align-items:center;justify-content:center;color:var(--blueprint-line);font-family:var(--font-mono);font-size:13px;text-align:center;padding:20px;}
+  .video-fallback.show{display:flex;}
+  .video-fallback strong{color:#fff;font-size:16px;}
+
+  /* ---------- Slide 6 : 3D ---------- */
+  .lab-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;flex:1;min-height:0;}
+  @media (max-width:980px){.lab-layout{grid-template-columns:1fr;}}
+  #canvasHost{
+    position:relative;background:var(--blueprint-deep);border:2px solid var(--ink);
+    min-height:360px;height:100%;overflow:hidden;
+  }
+  #canvasHost canvas{display:block;width:100%;height:100%;}
+  .lab-hint{
+    position:absolute;bottom:10px;left:10px;color:var(--blueprint-line);
+    font-family:var(--font-mono);font-size:11px;background:rgba(10,39,67,.7);padding:5px 9px;
+  }
+  .lab-side{display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-right:4px;}
+  .stage-group, .sim-group{display:flex;flex-direction:column;gap:6px;}
+  .group-title{font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--blueprint);border-bottom:1.5px solid var(--blueprint);padding-bottom:4px;}
+  .stagebtn, .simbtn{
+    text-align:left;border:1.5px solid var(--blueprint-deep);background:var(--paper-light);
+    padding:9px 11px;font-family:var(--font-body);font-size:13.5px;font-weight:600;
+    display:flex;align-items:center;gap:8px;
+  }
+  .stagebtn .num{font-family:var(--font-mono);font-size:11px;background:var(--blueprint-deep);color:#fff;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .stagebtn:hover, .simbtn:hover{background:var(--blueprint);color:#fff;}
+  .stagebtn.is-active{background:var(--ok-green);color:#fff;border-color:var(--ok-green);}
+  .stagebtn.is-active .num{background:#fff;color:var(--ok-green);}
+  .simbtn.is-active{background:var(--safety);color:#fff;border-color:var(--safety-deep);}
+  .lab-reset{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;background:transparent;border:1.5px solid var(--ink);padding:7px 10px;}
+  .lab-reset:hover{background:var(--ink);color:#fff;}
+  .lab-info{
+    background:var(--paper);border:1.5px dashed var(--blueprint);
+    padding:10px 12px;font-size:13px;line-height:1.45;min-height:96px;
+  }
+  .lab-info b{color:var(--blueprint-deep);}
+
+  /* ---------- Slide 7 : pamphlet ---------- */
+  .pamphlet-preview{
+    background:var(--paper-light);border:2px solid var(--ink);
+    padding:22px 26px;max-width:600px;
+    box-shadow:6px 6px 0 var(--blueprint);
+  }
+  .pamphlet-preview h3{font-size:22px;}
+  .pamphlet-preview ul{margin:8px 0;padding-left:20px;}
+  .pamphlet-preview li{font-size:14px;margin-bottom:5px;}
+  .step-strip{display:flex;align-items:center;gap:2px;margin:14px 0;flex-wrap:wrap;}
+  .step-strip .step{display:flex;flex-direction:column;align-items:center;gap:4px;width:78px;}
+  .step-strip .step span{font-family:var(--font-mono);font-size:9.5px;text-align:center;text-transform:uppercase;color:var(--blueprint-deep);}
+  .step-strip .arrow{color:var(--safety);font-size:16px;margin:0 -2px;padding-bottom:16px;}
+  .print-btn{
+    font-family:var(--font-mono);text-transform:uppercase;font-size:12px;
+    background:var(--safety);color:#fff;border:none;padding:10px 18px;margin-top:14px;
+  }
+  .print-btn:hover{background:var(--safety-deep);}
+
+  #printArea{display:none;}
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{
+      display:block !important;position:absolute;top:0;left:0;
+      width:148mm;min-height:210mm;padding:12mm;
+    }
+    .viewport, .navbar{display:none !important;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .slide{transition:none;}
+  }
+
+  /* ---------- tablet (portrait) ---------- */
+  @media (max-width:760px){
+    .cover-grid{grid-template-columns:1fr;}
+    .navbar{top:10px;left:16px;right:16px;flex-wrap:wrap;gap:8px;}
+    .measure-table{font-size:12.5px;}
+    .measure-table th,.measure-table td{padding:5px 7px;}
+  }
+
+  @media (max-width:640px){
+    .slide-inner{margin:24px 16px 92px 16px;}
+    .titleblock{left:16px;right:16px;grid-template-columns:auto 1fr auto;}
+    .titleblock > div:nth-child(4), .titleblock > div:nth-child(3){display:none;}
+    .cover-grid{grid-template-columns:1fr;}
+    .navbtn{padding:8px 12px;font-size:11px;}
+    .calc-row label{min-width:140px;}
+    .meta-row .k{width:110px;font-size:10px;}
+    #canvasHost{min-height:280px;}
+  }
+
+  /* ---------- celular pequeno ---------- */
+  @media (max-width:420px){
+    .slide-inner{margin:56px 12px 88px 12px;gap:12px;}
+    .navbar{top:8px;left:12px;right:12px;}
+    .navbtn{padding:7px 9px;font-size:10px;}
+    .dots{gap:4px;}
+    .dot{width:16px;height:7px;}
+    .titleblock{left:12px;right:12px;height:48px;bottom:12px;}
+    .titleblock > div{padding:4px 8px;}
+    .sheet-frame{inset:8px;}
+    .lab-side{gap:10px;}
+    .stagebtn, .simbtn{padding:7px 9px;font-size:12.5px;}
+  }
+
+  /* ---------- telas muito baixas (celular deitado) ---------- */
+  @media (max-height:480px){
+    .navbar{position:absolute;top:6px;}
+    .slide-inner{margin-top:44px;margin-bottom:16px;}
+    .titleblock{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport">
+
+  <nav class="navbar">
+    <div class="dots" id="dots" role="tablist" aria-label="Ir para o slide"></div>
+    <div class="navbtns">
+      <button class="navbtn" id="prevBtn">← Anterior</button>
+      <button class="navbtn" id="nextBtn">Próxima →</button>
+    </div>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 1 — CAPA -->
+  <!-- ============================================================ -->
+  <section class="slide cover-slide active" data-slide="1">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner">
+      <div class="eyebrow">Investigação Matemática · Minha casa, minha geometria</div>
+      <h1 class="cover-title">Estrutura<br>da Casa</h1>
+      <p class="cover-sub">Vigas, pilares e a engenharia que sustenta uma casa: como uma construção resiste ao próprio peso e às intempéries — vento, chuva e, em tese, até tremores.</p>
+
+      <div class="cover-grid">
+        <svg viewBox="0 0 320 220" width="100%" style="max-width:360px" role="img" aria-label="Corte esquemático de uma casa mostrando fundação, viga baldrame, pilares, viga superior e cobertura">
+          <rect x="0" y="0" width="320" height="220" fill="none"/>
+          <!-- solo -->
+          <rect x="0" y="188" width="320" height="32" fill="#B9B2A3" stroke="#1D2229" stroke-width="1.5"/>
+          <line x1="0" y1="188" x2="320" y2="188" stroke="#1D2229" stroke-width="2"/>
+          <!-- sapatas -->
+          <rect x="46" y="170" width="26" height="20" fill="#7FC2E8" stroke="#0A2743" stroke-width="2"/>
+          <rect x="248" y="170" width="26" height="20" fill="#7FC2E8" stroke="#0A2743" stroke-width="2"/>
+          <!-- viga baldrame -->
+          <rect x="40" y="158" width="240" height="14" fill="#123456" stroke="#0A2743" stroke-width="2"/>
+          <!-- pilares -->
+          <rect x="52" y="70" width="14" height="90" fill="#D9622B" stroke="#A84A1E" stroke-width="2"/>
+          <rect x="254" y="70" width="14" height="90" fill="#D9622B" stroke="#A84A1E" stroke-width="2"/>
+          <rect x="153" y="70" width="14" height="90" fill="#D9622B" stroke="#A84A1E" stroke-width="2"/>
+          <!-- viga superior -->
+          <rect x="40" y="56" width="240" height="14" fill="#123456" stroke="#0A2743" stroke-width="2"/>
+          <!-- cobertura -->
+          <polygon points="24,56 160,10 296,56" fill="#B9B2A3" stroke="#1D2229" stroke-width="2.5"/>
+          <!-- labels -->
+          <text x="8" y="200" font-family="IBM Plex Mono" font-size="9" fill="#1D2229">SOLO</text>
+          <text x="284" y="169" font-family="IBM Plex Mono" font-size="9" fill="#fff">BALDRAME</text>
+          <text x="196" y="118" font-family="IBM Plex Mono" font-size="9" fill="#A84A1E">PILAR</text>
+          <text x="284" y="66" font-family="IBM Plex Mono" font-size="9" fill="#fff">V. SUP.</text>
+          <text x="196" y="30" font-family="IBM Plex Mono" font-size="9" fill="#1D2229">COBERTURA</text>
+        </svg>
+
+        <div class="cover-meta">
+          <div class="meta-row"><div class="k">Tema</div><div class="v">Estrutura da Casa — vigas e pilares</div></div>
+          <div class="meta-row"><div class="k">Componentes</div><div class="v" contenteditable="false" spellcheck="false">Mateus A, Lucas S, Pedro G, Gabriel G, Kaio G, Thiago C, William</div></div>
+          <div class="meta-row"><div class="k">Turma</div><div class="v" contenteditable="false" spellcheck="false">2ºEM MA</div></div>
+          <div class="meta-row"><div class="k">Professora</div><div class="v">Gabriela Gonçalves</div></div>
+          <div class="meta-row"><div class="k">Instrumento</div><div class="v">Seminário — Investigação Matemática</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="titleblock" id="tb-1"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 2 — POR QUE A CASA PRECISA DE VIGAS E PILARES -->
+  <!-- ============================================================ -->
+  <section class="slide" data-slide="2">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner">
+      <div class="eyebrow">01 · Fundamentos</div>
+      <h2>O esqueleto da casa</h2>
+
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <p>Toda casa precisa de uma estrutura que sustente o peso da própria construção e resista às intempéries do tempo — vento e chuva, principalmente. Quem cumpre esse papel são as <b>vigas</b> e os <b>pilares</b>: eles fazem a ligação entre a <b>fundação</b> (que está no solo) e a <b>cobertura</b> (laje e/ou telhado, no topo).</p>
+          <p>Pense nisso como uma corrente de transmissão de forças: o peso da cobertura empurra para baixo, os pilares recebem essa carga e a levam até a viga baldrame, que por sua vez distribui tudo para as sapatas — e só então o solo recebe o peso final.</p>
+          <div class="card" data-tag="Sequência estrutural">
+            <b>Fundação → Viga baldrame → Pilares → Viga superior → Cobertura</b>
+            <p style="margin:6px 0 0;font-size:14px;">Cada etapa "amarra" a estrutura antes de a próxima etapa começar — é por isso que uma casa é construída sempre nessa ordem, de baixo para cima.</p>
+          </div>
+        </div>
+
+        <div class="card" data-tag="Vocabulário">
+          <ul style="padding-left:18px;margin:4px 0 0;">
+            <li><b>Sapata</b>: base que recebe e espalha o peso de um pilar no solo.</li>
+            <li><b>Viga baldrame</b>: viga que une todas as sapatas, percorrendo toda a área sob as paredes.</li>
+            <li><b>Pilar</b>: elemento vertical que sustenta a construção; fica nos extremos e entre paredes de cômodos grandes.</li>
+            <li><b>Viga superior</b>: nova viga sobre os pilares, amarrando tudo antes da cobertura.</li>
+            <li><b>Cobertura</b>: laje e/ou telhado, construído sobre a viga superior.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="titleblock" id="tb-2"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 3 — VIGAS -->
+  <!-- ============================================================ -->
+  <section class="slide" data-slide="3">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner">
+      <div class="eyebrow">02 · Vigas</div>
+      <h2>Viga baldrame &amp; viga superior</h2>
+
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <p>A viga baldrame une as sapatas percorrendo toda a extensão das paredes. Depois de erguidos os pilares, uma segunda viga — a <b>viga superior</b> — amarra o topo da estrutura, e é sobre ela que a cobertura será construída.</p>
+          <p>Geometricamente, uma viga é um <b>paralelepípedo</b> (prisma retangular reto), o que torna o volume de concreto muito fácil de estimar: basta multiplicar comprimento, largura e altura.</p>
+          <div class="formula-box">V = C × L × H <span style="opacity:.7;font-size:14px;">&nbsp;&nbsp;(comprimento × largura × altura)</span></div>
+          <p style="font-size:14px;">Nas vigas baldrame e superior, o comprimento (C) é a soma de toda a extensão das paredes — quem dimensiona largura (L) e altura (H) é o engenheiro responsável.</p>
+        </div>
+
+        <table class="measure-table">
+          <thead><tr><th>Elemento</th><th>Largura (L)</th><th>Altura (H)</th></tr></thead>
+          <tbody>
+            <tr><td>Viga baldrame</td><td>20 cm</td><td>40 cm</td></tr>
+            <tr><td>Viga superior</td><td>17 cm</td><td>30 cm</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" data-tag="Planta baixa do chalé — pág. 48">
+        <p style="margin:0 0 8px;font-size:14px;">Cotas totais e medidas internas de cada cômodo, extraídas da planta baixa:</p>
+        <table class="measure-table">
+          <thead><tr><th>Referência</th><th>Medida</th></tr></thead>
+          <tbody>
+            <tr><td>Topo (total)</td><td>4,71 m + 6,81 m</td></tr>
+            <tr><td>Lateral esquerda (total)</td><td>5,06 m + 6,00 m</td></tr>
+            <tr><td>Lateral direita (total)</td><td>10,96 m</td></tr>
+            <tr><td>Base — área de serviço</td><td>7,81 m (externa) / 7,41 m (interna)</td></tr>
+            <tr><td>Sala de estar</td><td>4,51 m × 4,58 m</td></tr>
+            <tr><td>Sala de jantar</td><td>1,30 m (largura superior)</td></tr>
+            <tr><td>Suíte 2</td><td>3,36 m × 3,67 m</td></tr>
+            <tr><td>Suíte 1</td><td>3,37 m × 3,42 m</td></tr>
+            <tr><td>Lavanderia</td><td>0,69 m × 3,33 m</td></tr>
+            <tr><td>Cozinha</td><td>4,60 m (central) / 5,83 m (inferior)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note" style="background:none;border:1.5px solid var(--blueprint);color:var(--blueprint-deep);">📐 No Slide 5, o comprimento (C) usado na calculadora já parte de uma estimativa do perímetro externo das paredes (≈ 45 m, calculado a partir das cotas totais acima). Para um resultado mais completo, somem também o comprimento das paredes internas (divisórias entre os cômodos) usando as medidas desta tabela.</div>
+    </div>
+    <div class="titleblock" id="tb-3"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 4 — PILARES E MATERIAIS -->
+  <!-- ============================================================ -->
+  <section class="slide" data-slide="4">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner">
+      <div class="eyebrow">03 · Pilares</div>
+      <h2>Pilares &amp; materiais</h2>
+
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <p>Os pilares dão sustentação à casa: ficam nos extremos de cada parede e também entre paredes, quando o cômodo é grande. Na planta baixa, eles aparecem marcados como um pequeno quadrado — é ali que se conta a quantidade de pilares do projeto.</p>
+          <p>Com uma base quadrada, o volume de cada pilar também é simples de calcular:</p>
+          <div class="formula-box">V = lado² × altura <span style="opacity:.7;font-size:14px;">&nbsp;&nbsp;(base 17 × 17 cm)</span></div>
+          <div class="card" data-tag="Planta baixa — pág. 49">
+            Na planta do chalé (página 49) são <b>22 pilares</b>, distribuídos nos cruzamentos de paredes e vértices. O corte lateral (Corte A) mostra a altura até a viga superior/forro: <b>2,70 m</b>. Acima dela, a cumeeira do telhado chega a 4,80 m.
+          </div>
+          <div class="card" data-tag="Materiais">
+            No Brasil é comum vigas e pilares serem de <b>concreto</b>. Mas também podem ser de <b>madeira</b> ou <b>aço</b>, apoiados sobre uma fundação do tipo <b>radier</b> (uma laje única que serve de base para toda a construção, em vez de sapatas isoladas).
+          </div>
+        </div>
+
+        <svg viewBox="0 0 260 220" width="100%" style="max-width:280px" role="img" aria-label="Planta baixa esquemática mostrando pilares como quadrados nas bordas e entre paredes">
+          <rect x="10" y="10" width="240" height="180" fill="none" stroke="#123456" stroke-width="3"/>
+          <line x1="130" y1="10" x2="130" y2="190" stroke="#123456" stroke-width="2" stroke-dasharray="6 4"/>
+          <g fill="#D9622B" stroke="#A84A1E" stroke-width="1.5">
+            <rect x="4" y="4" width="12" height="12"/>
+            <rect x="244" y="4" width="12" height="12"/>
+            <rect x="4" y="184" width="12" height="12"/>
+            <rect x="244" y="184" width="12" height="12"/>
+            <rect x="124" y="4" width="12" height="12"/>
+            <rect x="124" y="184" width="12" height="12"/>
+          </g>
+          <text x="20" y="105" font-family="IBM Plex Mono" font-size="10" fill="#123456">CÔMODO A</text>
+          <text x="150" y="105" font-family="IBM Plex Mono" font-size="10" fill="#123456">CÔMODO B</text>
+          <text x="10" y="208" font-family="IBM Plex Mono" font-size="9" fill="#A84A1E">■ = pilar (17×17cm)</text>
+        </svg>
+      </div>
+    </div>
+    <div class="titleblock" id="tb-4"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 5 — VÍDEO + CÁLCULOS -->
+  <!-- ============================================================ -->
+  <section class="slide" data-slide="5">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner">
+      <div class="eyebrow">04 · Passo a passo em vídeo</div>
+      <h2>Cálculo do volume de concreto</h2>
+
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="video-wrap">
+            <video id="calcVideo" controls playsinline>
+              <source src="video-slide5.mp4" type="video/mp4">
+            </video>
+            <div class="video-fallback" id="videoFallback">
+              <strong>🎥 video-slide5.mp4 não encontrado</strong>
+              <span>Grave o grupo resolvendo as contas passo a passo e salve o arquivo com esse nome exato, na mesma pasta deste HTML.</span>
+            </div>
+          </div>
+          <div class="note">O vídeo precisa estar sem ruído e mostrar as contas legíveis, com cada passo do cálculo explicado em voz alta — é isso que a professora vai avaliar aqui (vale 4,0).</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="calc">
+            <h4>① Viga baldrame</h4>
+            <div class="calc-row"><label for="b-c">Comprimento total das paredes — C (m)</label><input type="number" id="b-c" value="45" step="0.1" min="0"></div>
+            <div class="calc-row"><label for="b-l">Largura — L (cm)</label><input type="number" id="b-l" value="20" step="1" min="0"></div>
+            <div class="calc-row"><label for="b-h">Altura — H (cm)</label><input type="number" id="b-h" value="40" step="1" min="0"></div>
+            <div class="calc-result">V = C × L × H = <b id="b-result">—</b> m³</div>
+          </div>
+
+          <div class="calc">
+            <h4>② Viga superior</h4>
+            <div class="calc-row"><label for="s-c">Comprimento total das paredes — C (m)</label><input type="number" id="s-c" value="45" step="0.1" min="0"></div>
+            <div class="calc-row"><label for="s-l">Largura — L (cm)</label><input type="number" id="s-l" value="17" step="1" min="0"></div>
+            <div class="calc-row"><label for="s-h">Altura — H (cm)</label><input type="number" id="s-h" value="30" step="1" min="0"></div>
+            <div class="calc-result">V = C × L × H = <b id="s-result">—</b> m³</div>
+          </div>
+
+          <div class="calc">
+            <h4>③ Pilares</h4>
+            <div class="calc-row"><label for="p-lado">Lado da base (cm)</label><input type="number" id="p-lado" value="17" step="1" min="0"></div>
+            <div class="calc-row"><label for="p-alt">Altura do pilar (m)</label><input type="number" id="p-alt" value="2.7" step="0.1" min="0"></div>
+            <div class="calc-row"><label for="p-qtd">Quantidade de pilares</label><input type="number" id="p-qtd" value="22" step="1" min="0"></div>
+            <div class="calc-result">V = lado² × altura × qtd. = <b id="p-result">—</b> m³</div>
+          </div>
+
+          <div class="calc-result" style="background:var(--safety);">Volume total estimado ≈ <b id="total-result" style="color:#fff;">—</b> m³ de concreto</div>
+          <div class="note" style="background:none;border:1.5px solid var(--blueprint);color:var(--blueprint-deep);">📐 Os campos já vêm com os dados reais do chalé (págs. 48–49): a altura (2,70 m) e a quantidade de pilares (22) vêm direto do corte lateral e da planta. Já o comprimento (C) das vigas é uma estimativa do perímetro externo (≈ 45 m); somem o comprimento das paredes internas — usando a tabela do Slide 03 — para um valor mais completo, e a conta é refeita automaticamente.</div>
+        </div>
+      </div>
+    </div>
+    <div class="titleblock" id="tb-5"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 6 — MONTAGEM EM SOFTWARE (3D) -->
+  <!-- ============================================================ -->
+  <section class="slide" data-slide="6">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner" style="overflow:hidden;">
+      <div class="eyebrow">05 · Na prática</div>
+      <h2 style="font-size:clamp(24px,3.4vw,40px);">Montagem em software: construindo a estrutura</h2>
+
+      <div class="lab-layout">
+        <div id="canvasHost">
+          <div class="lab-hint">arraste para girar · role o mouse (scroll) para dar zoom</div>
+        </div>
+
+        <div class="lab-side">
+          <div class="stage-group">
+            <div class="group-title">Etapas da construção</div>
+            <button class="stagebtn" data-stage="0"><span class="num">1</span> Fundação (sapatas)</button>
+            <button class="stagebtn" data-stage="1"><span class="num">2</span> Viga baldrame</button>
+            <button class="stagebtn" data-stage="2"><span class="num">3</span> Pilares</button>
+            <button class="stagebtn" data-stage="3"><span class="num">4</span> Viga superior</button>
+            <button class="stagebtn" data-stage="4"><span class="num">5</span> Cobertura</button>
+            <button class="lab-reset" id="stageReset">↺ reiniciar etapas</button>
+          </div>
+
+          <div class="sim-group">
+            <div class="group-title">Simular resistência a</div>
+            <button class="simbtn" data-sim="vento">🌬️ Vento forte</button>
+            <button class="simbtn" data-sim="chuva">🌧️ Chuva</button>
+            <button class="simbtn" data-sim="tremor">🌎 Tremor de terra</button>
+            <button class="lab-reset" id="simReset">↺ parar simulação</button>
+          </div>
+
+          <div class="lab-info" id="labInfo">Clique em uma etapa à esquerda para começar a "construir" a casa, ou escolha uma simulação para ver como a estrutura reage.</div>
+        </div>
+      </div>
+    </div>
+    <div class="titleblock" id="tb-6"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 7 — PANFLETO -->
+  <!-- ============================================================ -->
+  <section class="slide" data-slide="7">
+    <div class="sheet-frame"></div><div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+    <div class="slide-inner">
+      <div class="eyebrow">06 · Material de apoio</div>
+      <h2>Panfleto resumo</h2>
+
+      <div class="pamphlet-preview" id="pamphletPreview">
+        <div class="eyebrow" style="margin-bottom:2px;">Investigação Matemática</div>
+        <h3>Estrutura da Casa: vigas e pilares</h3>
+        <ul>
+          <li><b>Vigas e pilares</b> ligam a fundação à cobertura e sustentam o peso da casa e as intempéries.</li>
+          <li><b>Viga baldrame</b>: une as sapatas, percorre toda a extensão das paredes.</li>
+          <li><b>Viga superior</b>: amarra o topo dos pilares antes da cobertura.</li>
+          <li><b>Pilares</b>: sustentam a estrutura; ficam nos extremos e entre paredes de cômodos grandes.</li>
+          <li>Volume de uma viga: <b>V = C × L × H</b>. Volume de um pilar quadrado: <b>V = lado² × altura</b>.</li>
+          <li>No Brasil o material mais comum é o <b>concreto</b>, mas também se usa madeira/aço com fundação radier.</li>
+        </ul>
+
+        <div class="step-strip" aria-label="Passo a passo da construção">
+          <div class="step"><svg width="40" height="30" viewBox="0 0 40 30"><rect x="4" y="20" width="10" height="8" fill="#7FC2E8" stroke="#0A2743"/><rect x="26" y="20" width="10" height="8" fill="#7FC2E8" stroke="#0A2743"/><line x1="0" y1="28" x2="40" y2="28" stroke="#1D2229" stroke-width="2"/></svg><span>1. Fundação</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><svg width="40" height="30" viewBox="0 0 40 30"><rect x="2" y="16" width="36" height="8" fill="#123456"/></svg><span>2. Baldrame</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><svg width="40" height="30" viewBox="0 0 40 30"><rect x="6" y="2" width="6" height="26" fill="#D9622B"/><rect x="28" y="2" width="6" height="26" fill="#D9622B"/></svg><span>3. Pilares</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><svg width="40" height="30" viewBox="0 0 40 30"><rect x="2" y="4" width="36" height="7" fill="#123456"/></svg><span>4. V. superior</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><svg width="40" height="30" viewBox="0 0 40 30"><polygon points="2,14 20,2 38,14" fill="#B9B2A3" stroke="#1D2229"/></svg><span>5. Cobertura</span></div>
+        </div>
+      </div>
+
+      <button class="print-btn" id="printBtn">🖨️</button>
+    </div>
+    <div class="titleblock" id="tb-7"></div>
+  </section>
+
+</div>
+
+<!-- área usada só na hora de imprimir o panfleto -->
+<div id="printArea"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     NAVEGAÇÃO ENTRE SLIDES
+  ========================================================= */
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+  var dotsWrap = document.getElementById('dots');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  var sheetNames = [
+    'Capa', 'Fundamentos', 'Vigas', 'Pilares', 'Cálculos', 'Montagem 3D', 'Panfleto'
+  ];
+
+  slides.forEach(function(s, i){
+    var tb = s.querySelector('.titleblock');
+    if(tb){
+      tb.innerHTML =
+        '<div class="tb-sheet"><span class="tb-label">Prancha</span><span class="tb-value">'+String(i+1).padStart(2,'0')+' / '+String(total).padStart(2,'0')+'</span></div>' +
+        '<div><span class="tb-label">Assunto</span><span class="tb-value">'+sheetNames[i]+'</span></div>' +
+        '<div><span class="tb-label">Disciplina</span><span class="tb-value">Investigação Matemática</span></div>' +
+        '<div><span class="tb-label">Tema</span><span class="tb-value">Estrutura da Casa</span></div>' +
+        '<div><span class="tb-label">Professora</span><span class="tb-value">Gabriela Gonçalves</span></div>';
+    }
+    var dot = document.createElement('button');
+    dot.className = 'dot' + (i===0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Ir para slide ' + (i+1) + ': ' + sheetNames[i]);
+    dot.addEventListener('click', function(){ goTo(i); });
+    dotsWrap.appendChild(dot);
+  });
+
+  function goTo(i){
+    if(i < 0 || i >= total) return;
+    slides[current].classList.remove('active');
+    dotsWrap.children[current].classList.remove('active');
+    current = i;
+    slides[current].classList.add('active');
+    dotsWrap.children[current].classList.add('active');
+    prevBtn.disabled = (current === 0);
+    nextBtn.disabled = (current === total - 1);
+  }
+  prevBtn.addEventListener('click', function(){ goTo(current - 1); });
+  nextBtn.addEventListener('click', function(){ goTo(current + 1); });
+  document.addEventListener('keydown', function(e){
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if(tag === 'INPUT' || document.activeElement.isContentEditable) return;
+    if(e.key === 'ArrowRight') goTo(current + 1);
+    if(e.key === 'ArrowLeft') goTo(current - 1);
+  });
+  prevBtn.disabled = true;
+
+  /* =========================================================
+     VÍDEO — fallback se o arquivo não existir
+  ========================================================= */
+  var video = document.getElementById('calcVideo');
+  var fallback = document.getElementById('videoFallback');
+  video.addEventListener('error', function(){ fallback.classList.add('show'); }, true);
+
+  /* =========================================================
+     CALCULADORAS DE VOLUME
+  ========================================================= */
+  function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+  function fmt(v){ return v.toFixed(3).replace('.', ','); }
+
+  function recalc(){
+    var vBaldrame = num('b-c') * (num('b-l')/100) * (num('b-h')/100);
+    var vSuperior = num('s-c') * (num('s-l')/100) * (num('s-h')/100);
+    var vPilarUnit = Math.pow(num('p-lado')/100, 2) * num('p-alt');
+    var vPilares = vPilarUnit * num('p-qtd');
+
+    document.getElementById('b-result').textContent = fmt(vBaldrame);
+    document.getElementById('s-result').textContent = fmt(vSuperior);
+    document.getElementById('p-result').textContent = fmt(vPilares);
+    document.getElementById('total-result').textContent = fmt(vBaldrame + vSuperior + vPilares);
+  }
+  ['b-c','b-l','b-h','s-c','s-l','s-h','p-lado','p-alt','p-qtd'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', recalc);
+  });
+  recalc();
+
+  /* =========================================================
+     PANFLETO — impressão
+  ========================================================= */
+  document.getElementById('printBtn').addEventListener('click', function(){
+    var area = document.getElementById('printArea');
+    area.innerHTML = document.getElementById('pamphletPreview').outerHTML;
+    window.print();
+  });
+
+  /* =========================================================
+     SLIDE 6 — CENA 3D (Three.js)
+  ========================================================= */
+  var host = document.getElementById('canvasHost');
+  var labInfo = document.getElementById('labInfo');
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0A2743);
+  scene.fog = new THREE.Fog(0x0A2743, 18, 40);
+
+  var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  var camRadius = 15, camTheta = 0.7, camPhi = 1.05;
+  function updateCamera(){
+    camera.position.set(
+      camRadius * Math.sin(camPhi) * Math.sin(camTheta),
+      camRadius * Math.cos(camPhi),
+      camRadius * Math.sin(camPhi) * Math.cos(camTheta)
+    );
+    camera.lookAt(0, 2.2, 0);
+  }
+  updateCamera();
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  host.appendChild(renderer.domElement);
+
+  function resizeRenderer(){
+    var w = host.clientWidth || 600, h = host.clientHeight || 400;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resizeRenderer();
+  window.addEventListener('resize', resizeRenderer);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  var sun = new THREE.DirectionalLight(0xffffff, 0.85);
+  sun.position.set(8, 14, 6);
+  scene.add(sun);
+
+  var ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 40),
+    new THREE.MeshStandardMaterial({ color: 0x2E4A63, roughness: 1 })
+  );
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = -0.5;
+  scene.add(ground);
+
+  var grid = new THREE.GridHelper(40, 40, 0x7FC2E8, 0x1D3550);
+  grid.position.y = -0.49;
+  scene.add(grid);
+
+  var houseGroup = new THREE.Group();
+  scene.add(houseGroup);
+
+  var FOOT = { w: 8, d: 5 };
+  var positions = [
+    [-FOOT.w/2, -FOOT.d/2], [FOOT.w/2, -FOOT.d/2],
+    [-FOOT.w/2,  FOOT.d/2], [FOOT.w/2,  FOOT.d/2],
+    [0, -FOOT.d/2], [0, FOOT.d/2]
+  ];
+
+  var matFooting   = new THREE.MeshStandardMaterial({ color: 0x7FC2E8, roughness: .8 });
+  var matBeam      = new THREE.MeshStandardMaterial({ color: 0x123456, roughness: .7 });
+  var matPillar    = new THREE.MeshStandardMaterial({ color: 0xD9622B, roughness: .6 });
+  var matRoof      = new THREE.MeshStandardMaterial({ color: 0xB9B2A3, roughness: .9, side: THREE.DoubleSide });
+
+  var stageGroups = [ new THREE.Group(), new THREE.Group(), new THREE.Group(), new THREE.Group(), new THREE.Group() ];
+  stageGroups.forEach(function(g){ g.visible = false; houseGroup.add(g); });
+
+  // stage 0: fundação (sapatas)
+  positions.forEach(function(p){
+    var m = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.9), matFooting);
+    m.position.set(p[0], -0.15, p[1]);
+    stageGroups[0].add(m);
+  });
+
+  // helper: viga em anel retangular
+  function ringBeam(y, thickness, mat){
+    var g = new THREE.Group();
+    var wBar = new THREE.Mesh(new THREE.BoxGeometry(FOOT.w + thickness, thickness, thickness), mat);
+    var wBar2 = wBar.clone();
+    wBar.position.set(0, y, -FOOT.d/2);
+    wBar2.position.set(0, y, FOOT.d/2);
+    var dBar = new THREE.Mesh(new THREE.BoxGeometry(thickness, thickness, FOOT.d + thickness), mat);
+    var dBar2 = dBar.clone();
+    dBar.position.set(-FOOT.w/2, y, 0);
+    dBar2.position.set(FOOT.w/2, y, 0);
+    g.add(wBar, wBar2, dBar, dBar2);
+    return g;
+  }
+
+  var BALDRAME_Y = 0.15, BALDRAME_T = 0.3;
+  stageGroups[1].add(ringBeam(BALDRAME_Y, BALDRAME_T, matBeam));
+
+  var PILLAR_H = 3.0;
+  var PILLAR_TOP_Y = BALDRAME_Y + BALDRAME_T/2 + PILLAR_H/2;
+  positions.forEach(function(p){
+    var m = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, PILLAR_H, 12), matPillar);
+    m.position.set(p[0], PILLAR_TOP_Y, p[1]);
+    stageGroups[2].add(m);
+  });
+
+  var VSUP_Y = BALDRAME_Y + BALDRAME_T/2 + PILLAR_H + 0.15;
+  var VSUP_T = 0.3;
+  stageGroups[3].add(ringBeam(VSUP_Y, VSUP_T, matBeam));
+
+  // stage 4: cobertura (telhado de duas águas)
+  (function(){
+    var eaveY = VSUP_Y + VSUP_T/2;
+    var ridgeY = eaveY + 1.6;
+    var run = FOOT.d/2 + 0.45;
+    var rise = ridgeY - eaveY;
+    var angle = Math.atan2(rise, run);
+    var slope = Math.hypot(run, rise);
+
+    [1, -1].forEach(function(sign){
+      var geo = new THREE.BoxGeometry(FOOT.w + 0.9, 0.12, slope);
+      var mesh = new THREE.Mesh(geo, matRoof);
+      mesh.rotation.x = sign > 0 ? angle : (Math.PI - angle);
+      mesh.position.set(0, (ridgeY + eaveY)/2, sign * run/2);
+      stageGroups[4].add(mesh);
+    });
+    var ridgeBeam = new THREE.Mesh(new THREE.BoxGeometry(FOOT.w + 0.9, 0.14, 0.14), matBeam);
+    ridgeBeam.position.set(0, ridgeY, 0);
+    stageGroups[4].add(ridgeBeam);
+  })();
+
+  updateInfoIdle();
+  function updateInfoIdle(){
+    labInfo.innerHTML = 'Clique em uma etapa à esquerda para começar a "construir" a casa, ou escolha uma simulação para ver como a estrutura reage.';
+  }
+
+  var stageTexts = [
+    '<b>1 · Fundação</b> — as sapatas recebem o peso dos pilares e o espalham no solo, evitando que a casa afunde.',
+    '<b>2 · Viga baldrame</b> — une todas as sapatas em um único anel rígido, amarrando a base de toda a construção.',
+    '<b>3 · Pilares</b> — elementos verticais dimensionados para sustentar a cobertura e transmitir essa carga até a viga baldrame.',
+    '<b>4 · Viga superior</b> — nova viga no topo dos pilares, amarrando a estrutura antes de receber a cobertura.',
+    '<b>5 · Cobertura</b> — laje e/ou telhado apoiados na viga superior, fechando a casa e protegendo contra chuva e sol.'
+  ];
+
+  var stageBtns = Array.prototype.slice.call(document.querySelectorAll('.stagebtn'));
+  var maxStage = -1;
+  function setStage(i){
+    maxStage = i;
+    stageGroups.forEach(function(g, idx){ g.visible = idx <= maxStage; });
+    stageBtns.forEach(function(b){ b.classList.toggle('is-active', parseInt(b.dataset.stage,10) <= maxStage); });
+    labInfo.innerHTML = stageTexts[maxStage];
+  }
+  stageBtns.forEach(function(b){
+    b.addEventListener('click', function(){ setStage(parseInt(b.dataset.stage,10)); });
+  });
+  document.getElementById('stageReset').addEventListener('click', function(){
+    maxStage = -1;
+    stageGroups.forEach(function(g){ g.visible = false; });
+    stageBtns.forEach(function(b){ b.classList.remove('is-active'); });
+    updateInfoIdle();
+  });
+
+  /* ---------- arrastar para girar / scroll para zoom ---------- */
+  var dragging = false, lastX = 0, lastY = 0;
+  renderer.domElement.addEventListener('pointerdown', function(e){
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+  });
+  window.addEventListener('pointerup', function(){ dragging = false; });
+  window.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var dx = e.clientX - lastX, dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    camTheta -= dx * 0.006;
+    camPhi = Math.min(1.5, Math.max(0.35, camPhi - dy * 0.006));
+    updateCamera();
+  });
+  host.addEventListener('wheel', function(e){
+    e.preventDefault();
+    camRadius = Math.min(28, Math.max(7, camRadius + e.deltaY * 0.01));
+    updateCamera();
+  }, { passive: false });
+
+  /* ---------- simulações: vento / chuva / tremor ---------- */
+  var simTexts = {
+    vento: '<b>🌬️ Vento forte</b> — as vigas (baldrame e superior) formam anéis rígidos que distribuem a força lateral do vento entre todos os pilares, evitando que a estrutura se deforme ou tombe. É esse efeito de "amarração" que dá estabilidade lateral à casa.',
+    chuva: '<b>🌧️ Chuva</b> — a inclinação do telhado direciona a água para longe da estrutura. A viga baldrame, geralmente impermeabilizada, evita que a umidade suba do solo para dentro das paredes por capilaridade.',
+    tremor: '<b>🌎 Tremor de terra</b> — o conjunto viga-pilar forma um pórtico monolítico: as ligações rígidas entre vigas e pilares permitem que a estrutura absorva pequenos deslocamentos horizontais sem romper. No Brasil, tremores fortes são raros, mas o mesmo princípio protege contra vibrações de máquinas, tráfego pesado e recalques do solo.'
+  };
+
+  var currentSim = null;
+  var simBtns = Array.prototype.slice.call(document.querySelectorAll('.simbtn'));
+
+  // partículas de chuva
+  var rainCount = 260;
+  var rainGeo = new THREE.BufferGeometry();
+  var rainPos = new Float32Array(rainCount * 3);
+  for(var i=0;i<rainCount;i++){
+    rainPos[i*3]   = (Math.random()-0.5) * 20;
+    rainPos[i*3+1] = Math.random() * 14;
+    rainPos[i*3+2] = (Math.random()-0.5) * 14;
+  }
+  rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+  var rainMat = new THREE.PointsMaterial({ color: 0x9FD4F0, size: 0.09, transparent: true, opacity: 0.85 });
+  var rainPoints = new THREE.Points(rainGeo, rainMat);
+  rainPoints.visible = false;
+  scene.add(rainPoints);
+
+  // partículas de vento
+  var windCount = 70;
+  var windGeo = new THREE.BufferGeometry();
+  var windPos = new Float32Array(windCount * 3);
+  for(var j=0;j<windCount;j++){
+    windPos[j*3]   = (Math.random()-0.5) * 26;
+    windPos[j*3+1] = Math.random() * 6;
+    windPos[j*3+2] = (Math.random()-0.5) * 14;
+  }
+  windGeo.setAttribute('position', new THREE.BufferAttribute(windPos, 3));
+  var windMat = new THREE.PointsMaterial({ color: 0xEAF6FF, size: 0.14, transparent: true, opacity: 0.7 });
+  var windPoints = new THREE.Points(windGeo, windMat);
+  windPoints.visible = false;
+  scene.add(windPoints);
+
+  function stopSim(){
+    currentSim = null;
+    rainPoints.visible = false;
+    windPoints.visible = false;
+    houseGroup.position.set(0,0,0);
+    houseGroup.rotation.z = 0;
+    stageGroups[4].rotation.z = 0;
+    simBtns.forEach(function(b){ b.classList.remove('is-active'); });
+    if(maxStage >= 0){ labInfo.innerHTML = stageTexts[maxStage]; } else { updateInfoIdle(); }
+  }
+  document.getElementById('simReset').addEventListener('click', stopSim);
+
+  simBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      var sim = b.dataset.sim;
+      if(currentSim === sim){ stopSim(); return; }
+      currentSim = sim;
+      simBtns.forEach(function(x){ x.classList.toggle('is-active', x === b); });
+      labInfo.innerHTML = simTexts[sim];
+      rainPoints.visible = (sim === 'chuva');
+      windPoints.visible = (sim === 'vento');
+      if(sim !== 'tremor'){ houseGroup.position.set(0,0,0); houseGroup.rotation.z = 0; }
+    });
+  });
+
+  /* ---------- loop de animação ---------- */
+  var clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    var dt = Math.min(clock.getDelta(), 0.05);
+    var t = clock.elapsedTime;
+
+    if(!dragging && !reducedMotion){
+      camTheta += dt * 0.05;
+      updateCamera();
+    }
+
+    if(currentSim === 'chuva'){
+      var pos = rainGeo.attributes.position.array;
+      for(var k=0;k<rainCount;k++){
+        pos[k*3+1] -= dt * 9;
+        if(pos[k*3+1] < -0.5){ pos[k*3+1] = 12 + Math.random()*2; }
+      }
+      rainGeo.attributes.position.needsUpdate = true;
+    }
+
+    if(currentSim === 'vento'){
+      var wpos = windGeo.attributes.position.array;
+      for(var m=0;m<windCount;m++){
+        wpos[m*3] += dt * 10;
+        if(wpos[m*3] > 13){ wpos[m*3] = -13; }
+      }
+      windGeo.attributes.position.needsUpdate = true;
+      stageGroups[4].rotation.z = Math.sin(t*3) * 0.02;
+      houseGroup.rotation.z = Math.sin(t*3) * 0.006;
+    }
+
+    if(currentSim === 'tremor'){
+      var s = 0.05;
+      houseGroup.position.x = (Math.random()-0.5) * s;
+      houseGroup.position.z = (Math.random()-0.5) * s;
+      houseGroup.rotation.z = (Math.random()-0.5) * 0.012;
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+})();
+</script>
+</body>
+</html>
