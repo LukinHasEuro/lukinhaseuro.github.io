@@ -9,9 +9,11 @@
   COMO USAR ESTE ARQUIVO
   =======================
   1) SLIDE 5 (vídeo dos cálculos): grave o vídeo do grupo resolvendo os
-     exercícios e salve o arquivo, com o nome exato "video-slide5.mp4",
-     NA MESMA PASTA deste arquivo .html. O player já está pronto pra tocar
-     automaticamente quando o arquivo existir.
+     exercícios, suba no YouTube (pode ser "não listado") e troque
+     SEU_ID_DO_VIDEO pelo ID do vídeo na linha do <iframe>, logo abaixo
+     do comentário "TROCAR AQUI" no HTML do Slide 5. O ID é a parte da
+     URL depois de "v=" — ex: em youtube.com/watch?v=abc123XYZ o ID é
+     "abc123XYZ".
   2) Os dados da planta baixa do chalé (páginas 48–49 da apostila) já estão
      transcritos no site — Slide 03 (medidas dos cômodos) e Slide 04
      (pilares, altura do pé-direito). Os campos da calculadora do Slide 5
@@ -218,10 +220,7 @@
   .calc-result b{color:var(--blueprint-line);font-size:16px;}
 
   .video-wrap{position:relative;background:var(--blueprint-deep);border:2px solid var(--ink);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;}
-  .video-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
-  .video-fallback{position:absolute;inset:0;display:none;flex-direction:column;gap:10px;align-items:center;justify-content:center;color:var(--blueprint-line);font-family:var(--font-mono);font-size:13px;text-align:center;padding:20px;}
-  .video-fallback.show{display:flex;}
-  .video-fallback strong{color:#fff;font-size:16px;}
+  .video-wrap iframe{width:100%;height:100%;display:block;border:none;}
 
   /* ---------- Slide 6 : 3D ---------- */
   .lab-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;flex:1;min-height:0;}
@@ -529,13 +528,14 @@
       <div class="two-col">
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div class="video-wrap">
-            <video id="calcVideo" controls playsinline>
-              <source src="video-slide5.mp4" type="video/mp4">
-            </video>
-            <div class="video-fallback" id="videoFallback">
-              <strong>🎥 video-slide5.mp4 não encontrado</strong>
-              <span>Grave o grupo resolvendo as contas passo a passo e salve o arquivo com esse nome exato, na mesma pasta deste HTML.</span>
-            </div>
+            <iframe
+              id="calcVideo"
+              src="https://www.youtube.com/embed/5UD7Cfi03yk"
+              title="Vídeo do cálculo do volume de concreto"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
           </div>
         </div>
 
@@ -711,13 +711,6 @@
     if(e.key === 'ArrowLeft') goTo(current - 1);
   });
   prevBtn.disabled = true;
-
-  /* =========================================================
-     VÍDEO — fallback se o arquivo não existir
-  ========================================================= */
-  var video = document.getElementById('calcVideo');
-  var fallback = document.getElementById('videoFallback');
-  video.addEventListener('error', function(){ fallback.classList.add('show'); }, true);
 
   /* =========================================================
      CALCULADORAS DE VOLUME
